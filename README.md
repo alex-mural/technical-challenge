@@ -44,8 +44,6 @@ Here's a typical breakdown of how much time should be spent on each skill we are
  2. Implement a move recorder (encoding) with chess notation 123,abc
  3. Q&A to test for the patterns that existed in the codebase
 
-##### 1. Visitor pattern?
-
  - AI Implementation (visitor)
  - Creating the board (factory)
  - Pick your AI implementation (strategy)
