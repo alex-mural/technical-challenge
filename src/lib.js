@@ -3,6 +3,7 @@ export function create() {
     board: {
       cells: Array(9).fill(null)
     },
+    moves: [],
     xIsNext: true,
     winner: null,
   };
@@ -100,15 +101,27 @@ export function calculateWinner(squares) {
   return "D";
 }
 
+function moveCode(piece, idx) {
+  const ROWS = ['1', '2', '3']
+  const COLS = ['a', 'b', 'c']
+
+  const col = idx % 3;
+  const row = (idx - col) / 3;
+
+  return `${piece.toString()}${COLS[col]}${ROWS[row]}`
+}
+
 export function playAt(gameState, idx, piece) {
   if (gameState.winner !== null) return gameState;
 
   const cells = gameState.board.cells.slice()
   piece.playAt(cells, idx)
+  const code = moveCode(piece, idx)
 
   return {
     board: { cells },
     xIsNext: !gameState.xIsNext,
     winner: calculateWinner(cells),
+    moves: gameState.moves.concat(code),
   }
 }

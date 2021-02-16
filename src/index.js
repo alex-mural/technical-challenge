@@ -69,6 +69,22 @@ const Board = (props) => {
   );
 }
 
+const MoveList = (props) => {
+  const { moves } = props;
+
+  // pair up the moves nicely
+  const movePairs = []
+  for (let i = 0; i < moves.length; i+=2) {
+    movePairs.push(
+      <li key={i}>{moves[i]} {moves[i+1]}</li>
+    )
+  }
+
+  return (
+    <ol>{movePairs}</ol>
+  )
+}
+
 const AI_STATES = {
   IDLE: 0,
   THINKING: 1,
@@ -124,13 +140,16 @@ class Game extends React.Component {
   }
 
   render() {
-    const { board } = this.state.game;
+    const { board, moves } = this.state.game;
 
     return (
-      <Board
-        cells={board.cells}
-        onClick={(i, evt) => this.handleClick(i, evt) }
-      />
+      <div>
+        <Board
+          cells={board.cells}
+          onClick={(i, evt) => this.handleClick(i, evt) }
+        />
+        <MoveList moves={moves} />
+      </div>
     );
   }
 }
