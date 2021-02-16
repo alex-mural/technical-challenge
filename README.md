@@ -42,7 +42,8 @@ Here's a typical breakdown of how much time should be spent on each skill we are
 
  1. Implement a new piece behavior
  2. Implement a move recorder (encoding) with chess notation 123,abc
- 3. Q&A to test for the patterns that existed in the codebase
+ 3. Implement a parametric board size
+ 4. Q&A to test for the patterns that existed in the codebase
 
  - AI Implementation (visitor)
  - Creating the board (factory)

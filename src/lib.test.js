@@ -31,3 +31,21 @@ describe('game', () => {
     })
   })
 })
+
+describe('transpose', () => {
+  it('transpose a row-major matrix into a col-major', () => {
+    const mat = [1, 2, 3, 4]
+
+    expect(game.transpose(mat, 2)).toStrictEqual([1,3,2,4])
+  })
+
+  it('prop: the transpose of a transpose is the initial matrix', () => {
+    const mat = [1,2,3,4]
+
+    expect(
+      game.transpose(
+        game.transpose(mat, 2)
+      , 2)
+    ).toStrictEqual(mat)
+  })
+})

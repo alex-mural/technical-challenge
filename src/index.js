@@ -21,51 +21,27 @@ const Square = (props) => {
 };
 
 const Board = (props) => {
+  const { cells, size } = props;
+
+  const BoardRow = ({ children }) => (
+    <div className="board-row">{children}</div>
+  )
+
+  const squares = cells.map((cell, i) => {
+    return (
+      <Square key={i} value={cell} onClick={e => props.onClick(i, e)} />
+    )
+  })
+
+  let rows = []
+  for (let i = 0; i < cells.length; i += size) {
+    rows.push(
+      <BoardRow key={i}>{squares.slice(i, i+size)}</BoardRow>
+    )
+  }
+  
   return (
-    <div>
-      <div className="board-row">
-        <Square
-          value={props.cells[0]}
-          onClick={e => props.onClick(0, e)}
-        />
-        <Square
-          value={props.cells[1]}
-          onClick={e => props.onClick(1, e)}
-        />
-        <Square
-          value={props.cells[2]}
-          onClick={e => props.onClick(2, e)}
-        />
-      </div>
-      <div className="board-row">
-        <Square
-          value={props.cells[3]}
-          onClick={e => props.onClick(3, e)}
-        />
-        <Square
-          value={props.cells[4]}
-          onClick={e => props.onClick(4, e)}
-        />
-        <Square
-          value={props.cells[5]}
-          onClick={e => props.onClick(5, e)}
-        />
-      </div>
-      <div className="board-row"> 
-        <Square
-          value={props.cells[6]}
-          onClick={e => props.onClick(6, e)}
-        />
-        <Square
-          value={props.cells[7]}
-          onClick={e => props.onClick(7, e)}
-        />
-        <Square
-          value={props.cells[8]}
-          onClick={e => props.onClick(8, e)}
-        />
-      </div>
-    </div>
+    <div>{rows}</div>
   );
 }
 
@@ -95,7 +71,7 @@ class Game extends React.Component {
     super(props);
 
     this.state = {
-      game: game.create(),
+      game: game.create(4),
       aiState: AI_STATES.IDLE,
     }
   }
@@ -145,6 +121,7 @@ class Game extends React.Component {
     return (
       <div>
         <Board
+          size={board.size}
           cells={board.cells}
           onClick={(i, evt) => this.handleClick(i, evt) }
         />
