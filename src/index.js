@@ -4,7 +4,9 @@ import * as ai from './ai';
 
 import './style.css';
 
-///
+function sleep(timeout) {
+  return new Promise(r => setTimeout(r, timeout))
+}
 
 function calculateWinner(squares) {
   // possible winning combinations for a 3×3 grid
@@ -86,6 +88,11 @@ const Board = (props) => {
   );
 }
 
+const AI_STATES = {
+  IDLE: 0,
+  THINKING: 1,
+}
+
 class Game extends React.Component {
   constructor(props) {
     super(props);
@@ -93,25 +100,48 @@ class Game extends React.Component {
       board: {
         cells: Array(9).fill(null)
       },
-      xIsNext: true
+      xIsNext: true,
+      winner: null,
+      aiState: AI_STATES.IDLE
     };
   }
 
-  handleClick(i) {
-    const { board } = this.state;
-    let cells = board.cells.slice();
+  async aiMove() {
+    this.setState({ aiState: AI_STATES.THINKING })
 
-    // TODO: handle error message
-    if (cells[i]) return;
-    cells[i] = this.state.xIsNext ? "X" : "O";
+    await sleep(2000)
 
-    const aiMove = ai.bogo(cells)
-    cells[aiMove] = !this.state.xIsNext ? "X" : "O";
+    const idx = ai.bogo(this.state.board.cells)
+    this.playAt(idx)
+
+    this.setState({
+      aiState: AI_STATES.IDLE,
+    })
+  }
+
+  // implement this?
+  playAt(idx) {
+    if (this.state.winner !== null) return;
+
+    let cells = this.state.board.cells.slice();
+    if (cells[idx]) return;
+
+    cells[idx] = this.state.xIsNext ? "X" : "O";
+
+    const winner = calculateWinner(cells);
 
     this.setState({
       board: { cells },
-      xIsNext: !this.state.xIsNext
-    });
+      xIsNext: !this.state.xIsNext,
+      winner,
+    })
+  }
+
+  handleClick(idx) {
+    if (this.state.aiState === AI_STATES.THINKING) return;
+
+    this.playAt(idx)
+    this.aiMove()
   }
 
   handleUndo() {
