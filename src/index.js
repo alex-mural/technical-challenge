@@ -41,7 +41,7 @@ const Board = (props) => {
   }
   
   return (
-    <div>{rows}</div>
+    <div className="board">{rows}</div>
   );
 }
 
@@ -57,7 +57,7 @@ const MoveList = (props) => {
   }
 
   return (
-    <ol>{movePairs}</ol>
+    <ol className="move-list">{movePairs}</ol>
   )
 }
 
@@ -66,12 +66,23 @@ const AI_STATES = {
   THINKING: 1,
 }
 
+const Marquise = ({ game }) => {
+  const toPlay = game.xIsNext ? PIECES.X : PIECES.O
+
+  return (
+    <section className="marquise">
+      {game.winner && <p>{game.winner.toString()} wins!</p>}
+      {!game.winner && <p>{toPlay.toString()} to play.</p>}
+    </section>
+  )
+}
+
 class Game extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      game: game.create(4),
+      game: game.create(3),
       aiState: AI_STATES.IDLE,
     }
   }
@@ -120,18 +131,33 @@ class Game extends React.Component {
 
     return (
       <div>
-        <Board
-          size={board.size}
-          cells={board.cells}
-          onClick={(i, evt) => this.handleClick(i, evt) }
-        />
-        <MoveList moves={moves} />
+        <Marquise game={this.state.game} />
+        <div className="game-board">
+          <Board
+            size={board.size}
+            cells={board.cells}
+            onClick={(i, evt) => this.handleClick(i, evt) }
+          />
+          <MoveList moves={moves} />
+        </div>
       </div>
     );
   }
 }
 
+const App = _ => (
+  <main>
+    <div className="header">
+      <h1>Tic-Tac-TΩe</h1>
+      <p>
+        Take a look at this new tic-tac-toe game, now with 50% more pieces.
+      </p>
+    </div>
+    <Game />
+    <footer>Made by <em>insert your name here</em></footer>
+  </main>
+)
+
 // ========================================
 
-ReactDOM.render(<Game />, document.getElementById("root"));
-
+ReactDOM.render(<App />, document.getElementById("root"));
