@@ -125,6 +125,18 @@ export function calculateWinner(board) {
     return false
   }
 
+  const findColMatch = (piece, cells, dimension) => {
+    for(let i = 0; i < dimension; i++) {
+      const col = Array.from(
+        { length : dimension },
+        (_, j) => cells[i + j * dimension]
+      )
+      const match = col.reduce(allMatch(piece), true)
+
+      if (match) return true
+    }
+  }
+
   const findDiagMatch = (piece, cells, dimension) => {
     const first = Array.from(
       { length: board.size },
@@ -140,14 +152,10 @@ export function calculateWinner(board) {
            second.reduce(allMatch(piece), true)
   }
   
-    
-  const winner = Object.values(PIECES).find(piece => {
-    // let's use three flags, looping as long as one
-    // is still valid
-
-    if (findRowMatch(piece, board.cells, board.size)) return piece
-    if (findRowMatch(piece, transpose(board.cells, board.size), board.size)) return piece
-    if (findDiagMatch(piece, board.cells, board.size)) return piece
+  const winner = [PIECES.X, PIECES.O].find(piece => {
+    return findRowMatch(piece, board.cells, board.size) ||
+           findColMatch(piece, board.cells, board.size) ||
+           findDiagMatch(piece, board.cells, board.size)
   })
 
   if (winner) return winner
@@ -156,7 +164,7 @@ export function calculateWinner(board) {
     if (board.cells[i] === null) return null
   }
 
-  return "D";
+  return "DRAW";
 }
 
 function moveCode(board, piece, idx) {
