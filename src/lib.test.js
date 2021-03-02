@@ -1,5 +1,7 @@
 import * as game from './lib'
 
+const todo = _ => {};
+
 describe('sample', () => {
   test('it works', () => {
     expect(true)
@@ -29,23 +31,13 @@ describe('game', () => {
 
       expect(game.playAt(state, 0).xIsNext).toBeFalsy()
     })
-  })
-})
 
-describe('transpose', () => {
-  it('transpose a row-major matrix into a col-major', () => {
-    const mat = [1, 2, 3, 4]
-
-    expect(game.transpose(mat, 2)).toStrictEqual([1,3,2,4])
+    test('fails when playing on a non-empty square', todo)
   })
 
-  it('prop: the transpose of a transpose is the initial matrix', () => {
-    const mat = [1,2,3,4]
-
-    expect(
-      game.transpose(
-        game.transpose(mat, 2)
-      , 2)
-    ).toStrictEqual(mat)
+  describe('.calculateWinner', () => {
+    test('returns `null` when there are no winners', todo)
+    test('returns `DRAW` when the game is draw', todo)
+    test('returns `piece` when a piece wins', todo)
   })
 })

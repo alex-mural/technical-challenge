@@ -1,104 +1,63 @@
+function sleep(timeout) {
+  return new Promise(r => setTimeout(r, timeout))
+}
+
+/**
+ * @typedef {string} BoardCell
+ *
+ * @typedef BoardState
+ * @property {number} size
+ * @property {BoardCell[]} cells
+ */
+
+/**
+ * @typedef GameState
+ * @property {BoardState} board
+ * @property {boolean} xIsNext
+ * @property {WinnerResult} winner
+ */
+
+/**
+ * Factory function that creates the initial GameState.
+ *
+ * @param {number} size the board size; i.e. `3` would yield a 3x3 grid.
+ * @returns {GameState}
+ */
 export function create(size = 3) {
   return {
     board: {
       size,
       cells: Array(size * size).fill(null)
     },
-    moves: [],
     xIsNext: true,
     winner: null,
   };
 }
 
-// return the Transpose of cells, where rows → cols
-//
-// this is useful if you need to leverage the symmetry of
-// the matrix structure
-export function transpose(cells, dimension = 0) {
-  return Array.from(
-    { length: cells.length },
-    (_, i) => {
-      const col = i % dimension
-      const row = (i - col) / dimension
-
-      // thus we can say that `row * dimension + col = i`
-      const tidx = col * dimension + row
-      console.log(`${i} → ${tidx}`)
-      return cells[tidx]
-    }
-  )
-}
-
-class Piece {
-  constructor(symbol) {
-    this.symbol = symbol
-  }
-  
-  toString() {
-    return this.symbol
-  }
-
-  equals(other) {
-    if (!other) return false;
-    
-    return other.symbol === this.symbol
-  }
-
-  playAt(board, idx) {
-    if (board.cells[idx] !== null) throw `Cell is already taken!`
-    
-    const cells = board.cells.slice()
-    cells[idx] = this
-
-    return cells
-  }
-}
-
-class OmegaPiece extends Piece {
-  playAt(board, idx) {
-    const cells = super.playAt(board, idx)
-    const sz = board.size
-
-    // figure out the cell up north, east, west,and south
-    // and clear them
-    const north = idx - sz
-    const south = idx + sz
-
-    // east & west must be on the same row
-    const east = (idx - 1) % sz < idx % sz ? idx - 1 : -1
-    const west = (idx + 1) % sz > idx % sz ? idx + 1 : -1
-
-    for (let idx of [north, south, east, west]) {
-      // let's only keep those that are inbounds
-      if (idx < 0 || idx > cells.length) continue;
-
-      // we can't delete another Omega piece
-      if (this === cells[idx]) continue;
-      
-      cells[idx] = null;
-    }
-
-    return cells
-  }
-
-  // acts as a wildcard
-  equals(other) {
-    if (other) return true
-
-    return false
-  }
-}
-
+/**
+ * @typedef {'X'|'O'} Piece
+ * @type {Map<Piece, Piece>}
+ */
 export const PIECES = {
-  X: new Piece('X'),
-  O: new Piece('O'),
-  OMEGA: new OmegaPiece('Ω'),
+  X: 'X',
+  O: 'O',
 }
 
+/**
+ * @param {Piece} a
+ * @param {Piece} b
+ */
 function piecesEq(a, b) {
-  return (a && a.equals(b)) || (b && b.equals(a))
+  return (a && a == b) || (b && b == a)
 }
 
+/**
+ * Determines if there is a current winner.
+ *
+ * @typedef {Piece | null | 'DRAW'} WinnerResult
+ * @param {BoardState} board
+ * @returns {WinnerResult}
+ */
 export function calculateWinner(board) {
   // the logic is the following:
   // - same symbol on a row
@@ -113,8 +72,10 @@ export function calculateWinner(board) {
   // instead of looking if the symbols are the same
   // let's try to figure out if a symbol wins at all
   const allMatch = piece => (match, cell) => match && piecesEq(piece, cell)
-  
-  const findRowMatch = (piece, cells, dimension) => {
+
+  const findRowMatch = (piece) => {
+    const { size: dimension, cells } = board
+
     for(let i = 0; i < dimension; i++) {
       const row = cells.slice(i, i + dimension)
       const match = row.reduce(allMatch(piece), true)
@@ -125,7 +86,9 @@ export function calculateWinner(board) {
     return false
   }
 
-  const findColMatch = (piece, cells, dimension) => {
+  const findColMatch = (piece) => {
+    const { size: dimension, cells } = board
+
     for(let i = 0; i < dimension; i++) {
       const col = Array.from(
         { length : dimension },
@@ -137,29 +100,31 @@ export function calculateWinner(board) {
     }
   }
 
-  const findDiagMatch = (piece, cells, dimension) => {
+  const findDiagMatch = (piece) => {
+    const { size: dimension, cells } = board
+
     const first = Array.from(
-      { length: board.size },
-      (_, i) => board.cells[i + i * board.size]
+      { length: dimension },
+      (_, i) => cells[i + i * dimension]
     )
 
     const second = Array.from(
-      { length: board.size },
-      (_, i) => board.cells[(board.cells.length-board.size) - (i * board.size) + i]
+      { length: dimension },
+      (_, i) => cells[(cells.length - dimension) - (i * dimension) + i]
     )
 
     return first.reduce(allMatch(piece), true) ||
            second.reduce(allMatch(piece), true)
   }
-  
+
   const winner = [PIECES.X, PIECES.O].find(piece => {
-    return findRowMatch(piece, board.cells, board.size) ||
-           findColMatch(piece, board.cells, board.size) ||
-           findDiagMatch(piece, board.cells, board.size)
+    return findRowMatch(piece) ||
+           findColMatch(piece) ||
+           findDiagMatch(piece)
   })
 
   if (winner) return winner
-  
+
   for (let i = 0; i < board.cells.length; i++) {
     if (board.cells[i] === null) return null
   }
@@ -167,37 +132,30 @@ export function calculateWinner(board) {
   return "DRAW";
 }
 
-function moveCode(board, piece, idx) {
-  const COLS = Array.from(
-    { length: board.size },
-    (_, i) => String.fromCharCode(97 + i)
-  )
-  const ROWS = Array.from(
-    { length: board.size },
-    (_, i) => (1 + i).toString()
-  )
-  
-  const col = idx % board.size;
-  const row = (idx - col) / board.size;
-
-  return `${piece.toString()}${COLS[col]}${ROWS[row]}`
-}
-
+/**
+ *
+ * @param {GameState} gameState
+ * @param {number} idx index of the cell to play into, must be empty
+ * @param {Piece} piece the piece to play
+ * @throws {string}
+ * @returns {GameState} gameState mutation
+ */
 export function playAt(gameState, idx, piece) {
   if (gameState.winner !== null) return gameState;
 
-  const mutation = piece.playAt(gameState.board, idx)
-  const code = moveCode(gameState.board, piece, idx)
+  let cells = gameState.board.cells.slice();
+
+  if (cells[idx]) throw 'Cannot play on a non-empty square.'
+  cells[idx] = piece
 
   const board = {
     ...gameState.board,
-    cells: mutation
+    cells
   }
 
   return {
     board,
     xIsNext: !gameState.xIsNext,
     winner: calculateWinner(board),
-    moves: gameState.moves.concat(code),
   }
 }
