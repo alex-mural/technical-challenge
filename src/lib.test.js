@@ -35,7 +35,7 @@ const Board = {
 //
 // **** FIXTURES ****
 
-const todo = _ => {};
+function todo(_) { }
 
 describe('sample', () => {
   test('it works', () => {
