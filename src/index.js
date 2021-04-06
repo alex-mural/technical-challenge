@@ -1,74 +1,50 @@
-import React, { Component } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import * as game from './lib'
+import { PIECES } from './lib'
 import * as ai from './ai';
 
 import './style.css';
 
-function sleep(timeout) {
-  return new Promise(r => setTimeout(r, timeout))
-}
+
+const AUTHOR = '<insert your name here>'
 
 const Square = (props) => {
+  const ariaLabel = `${props.value || 'empty'}`
+
   return (
-    <button className="square" onClick={props.onClick}>
+    <button className="square"
+      aria-label={ariaLabel}
+      onClick={props.onClick}
+      onContextMenu={props.onClick}>
       {props.value}
     </button>
   );
 };
 
 const Board = (props) => {
-  return (
-    <div>
-      <div className="board-row">
-        <Square
-          value={props.cells[0]}
-          onClick={() => props.onClick(0)}
-        />
-        <Square
-          value={props.cells[1]}
-          onClick={() => props.onClick(1)}
-        />
-        <Square
-          value={props.cells[2]}
-          onClick={() => props.onClick(2)}
-        />
-      </div>
-      <div className="board-row">
-        <Square
-          value={props.cells[3]}
-          onClick={() => props.onClick(3)}
-        />
-        <Square
-          value={props.cells[4]}
-          onClick={() => props.onClick(4)}
-        />
-        <Square
-          value={props.cells[5]}
-          onClick={() => props.onClick(5)}
-        />
-      </div>
-      <div className="board-row"> 
-        <Square
-          value={props.cells[6]}
-          onClick={() => props.onClick(6)}
-        />
-        <Square
-          value={props.cells[7]}
-          onClick={() => props.onClick(7)}
-        />
-        <Square
-          value={props.cells[8]}
-          onClick={() => props.onClick(8)}
-        />
-      </div>
-    </div>
-  );
-}
+  const { cells, size } = props;
 
-const AI_STATES = {
-  IDLE: 0,
-  THINKING: 1,
+  const BoardRow = ({ children }) => (
+    <div className="board-row">{children}</div>
+  )
+
+  const squares = cells.map((cell, i) => {
+    return (
+      <Square key={i} value={cell} onClick={e => props.onClick(i, e)} />
+    )
+  })
+
+  let rows = []
+  for (let i = 0; i < cells.length; i += size) {
+    rows.push(
+      <BoardRow key={i}>{squares.slice(i, i+size)}</BoardRow>
+    )
+  }
+
+  return (
+    <div className="board">{rows}</div>
+  );
 }
 
 class Game extends React.Component {
@@ -76,50 +52,51 @@ class Game extends React.Component {
     super(props);
 
     this.state = {
-      game: game.create(),
-      aiState: AI_STATES.IDLE,
+      game: game.create(3),
     }
   }
 
-  async aiMove() {
-    await sleep(2000)
-
+  aiMove() {
     const idx = ai.bogo(this.state.game.board.cells)
+    const piece = this.state.game.xIsNext ? PIECES.X : PIECES.O
 
     this.setState({
-      game: game.playAt(this.state.game, idx),
-      aiState: AI_STATES.IDLE,
+      game: game.playAt(this.state.game, idx, piece),
     })
   }
 
-  handleClick(idx) {
-    if (this.state.aiState === AI_STATES.THINKING) return;
-    
-    this.setState({
-      game: game.playAt(this.state.game, idx),
-      aiState: AI_STATES.THINKING,
-    })
+  handleClick(idx, evt) {
+    evt.preventDefault();
 
-    this.aiMove()
-  }
-  
-  handleUndo() {
-    // TODO: handle undo
+    let piece = null;
+    piece = this.state.game.xIsNext ? PIECES.X : PIECES.O
+
+    this.setState({
+      game: game.playAt(this.state.game, idx, piece),
+    }, this.aiMove)
   }
 
   render() {
     const { board } = this.state.game;
 
     return (
-      <Board
-        cells={board.cells}
-        onClick={i => this.handleClick(i)}
+      <div>
+        <div className="game-board">
+          <Board
+            size={board.size}
+            cells={board.cells}
+            onClick={(i, evt) => this.handleClick(i, evt) }
       />
+        </div>
+      </div>
     );
   }
 }
 
+const App = _ => (
+  <Game />
+)
+
 // ========================================
 
-ReactDOM.render(<Game />, document.getElementById("root"));
-
+ReactDOM.render(<App />, document.getElementById("root"));
