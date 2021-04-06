@@ -66,9 +66,9 @@ Here's a typical breakdown of how much time should be spent on each skill we are
 
 Proper usage of HTML landmarks
 
- - <img alt /> attributes for images
- - <p />
- - <section />
+ - `<img alt />` attributes for images
+ - `<p />`
+ - `<section />`
 
 ##### 4.1 HTML Scaffolding
 
