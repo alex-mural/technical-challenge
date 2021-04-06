@@ -78,7 +78,7 @@ Implement the rendering logic
 
  - [ ] Implement the UI design
  
- [[/public/mockup.png|HTML Mockup]]
+ ![HTML Mockup](/public/mockup.png)
  
 Proper usage of HTML landmarks, i.e.:
 
