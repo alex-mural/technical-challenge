@@ -79,9 +79,5 @@ Implement the rendering logic
  - [ ] Implement the UI design
  
  ![HTML Mockup](/public/mockup.png)
- 
-Proper usage of HTML landmarks, i.e.:
 
- - <img alt /> attributes for images
- - <p />
- - <section />
+Proper usage of HTML landmarks (`<h1…6>, <p>, <section>, etc…`)
